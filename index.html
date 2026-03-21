@@ -1,12 +1,4 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>首頁</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
-async function loadContent(){ return await (await fetch('site-content.json')).json(); }
-function nav(c, active){
-  const items=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['協會活動','events.html'],['書籍專區','books.html']];
-  return `<div class="topbar"><div class="container">
-    <div class="brand"><img src="logo.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
-    <nav>${items.map(([n,h])=>`<a href="${h}" class="${active===h?'active':''}">${n}</a>`).join('')}</nav>
-  </div></div>`;
-}
-
-loadContent().then(c=>{ document.getElementById('app').innerHTML=nav(c,'index.html')+`<div class="container section"><div class="glass"><div class="kicker">HOME</div><h1>${c.siteName}</h1><div class="small">本版已升級為更像真實翻頁書的動畫試閱版。</div><p><a class="btn primary" href="books.html">前往書籍專區</a></p></div></div>`; });
-</script></body></html>
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>index</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
+async function loadContent(){const r=await fetch('site-content.json');return await r.json();}
+function navHtml(active,c){const nav=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['報名系統','signup.html'],['協會活動','events.html'],['書籍專區','books.html'],['自動訂單','order.html'],['會員專區','members.html'],['聯絡我們','contact.html']];return `<div class="topbar"><div class="container"><div class="brand"><img src="logo-official.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div><nav>${nav.map(([n,h])=>`<a href="${h}" class="${active===n?'active':''}">${n}</a>`).join('')}</nav><a class="btn primary" href="order.html">立即下單</a></div></div>`;}
+loadContent().then(c=>{document.getElementById('app').innerHTML=navHtml('首頁',c)+`<div class="container"><section class="hero"><div class="glass hero-main"><div class="eyebrow">${c.heroEyebrow}</div><h1>${c.heroTitle}</h1><div class="subcopy">${c.heroText}</div><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px"><a class="btn primary" href="library.html">前往牌義資料庫</a><a class="btn" href="draw.html">開始抽牌占卜</a></div><div class="small" style="margin-top:14px">本版已整合 A：78張完整牌義資料庫 與 C：牌義＋抽牌AI解讀系統。</div></div><div class="glass hero-side"><img src="logo-official.svg" style="width:min(360px,100%)"><p class="small">你之後大部分文字只要改 site-content.json，就能更新整站內容。</p></div></section></div>`;});</script></body></html>
