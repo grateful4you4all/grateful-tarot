@@ -1,10 +1,12 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>抽牌占卜</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
-async function loadContent(){return await (await fetch('site-content.json')).json();}
-function nav(c,active){
- const items=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['協會活動','events.html'],['書籍專區','books.html']];
- return `<div class="topbar"><div class="container">
- <div class="brand"><img src="logo.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
- <nav>${items.map(([n,h])=>`<a href="${h}" class="${active===h?'active':''}">${n}</a>`).join('')}</nav>
- </div></div>`;
+async function loadContent(){ return await (await fetch('site-content.json')).json(); }
+function nav(c, active){
+  const items=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['協會活動','events.html'],['書籍專區','books.html']];
+  return `<div class="topbar"><div class="container">
+    <div class="brand"><img src="logo.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
+    <nav>${items.map(([n,h])=>`<a href="${h}" class="${active===h?'active':''}">${n}</a>`).join('')}</nav>
+  </div></div>`;
 }
-loadContent().then(c=>{document.getElementById('app').innerHTML=nav(c,'draw.html')+`<div class="container section"><div class="glass"><h2>抽牌占卜</h2><div class="notice">這一頁已保留版位，可再依需求補完整內容。</div></div></div>`;});</script></body></html>
+
+loadContent().then(c=>{ document.getElementById('app').innerHTML=nav(c,'draw.html')+`<div class="container section"><div class="glass"><h2>抽牌占卜</h2><div class="notice">這一頁版位保留，可再補完整內容。</div></div></div>`; });
+</script></body></html>
