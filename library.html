@@ -17,7 +17,7 @@ function navHtml(active,c){
 }
 
 loadContent().then(c=>{
-  let state={ search:'', category:'全部', selectedName:(c.cards[0]&&c.cards[0].name)||'' };
+  let state={ search:'', searchDraft:'', category:'全部', selectedName:(c.cards[0]&&c.cards[0].name)||'' };
 
   function normalize(v){ return String(v||'').toLowerCase(); }
   function cardSearchBlob(card){
@@ -38,6 +38,23 @@ loadContent().then(c=>{
     const list = filtered();
     return list.find(x => x.name === state.selectedName) || list[0] || c.cards[0];
   }
+  function applySearch(){
+    state.search = state.searchDraft;
+    const list = filtered();
+    if(list.length) state.selectedName = list[0].name;
+    render();
+  }
+  function setCategory(cat){
+    state.category = cat;
+    const list = filtered();
+    if(list.length) state.selectedName = list[0].name;
+    render();
+  }
+  function selectCard(name){
+    state.selectedName = name;
+    render();
+  }
+
   function render(){
     const list = filtered();
     if(list.length && !list.some(x => x.name === state.selectedName)) state.selectedName = list[0].name;
@@ -53,16 +70,26 @@ loadContent().then(c=>{
 
           <div class="library-grid" style="margin-top:18px">
             <div class="card">
-              <div class="form-grid">
-                <div>
-                  <label>關鍵字</label>
-                  <input type="text" placeholder="輸入牌名、關鍵字、元素..." value="${String(state.search).replace(/"/g,'&quot;')}" oninput="window.__librarySearch(this.value)">
-                </div>
-                <div>
-                  <label>分類</label>
-                  <select onchange="window.__libraryCategory(this.value)">
-                    ${['全部','大阿卡納','宮廷人物牌','四元素數字牌'].map(cat => `<option value="${cat}" ${state.category===cat?'selected':''}>${cat}</option>`).join('')}
-                  </select>
+              <label>關鍵字</label>
+              <div class="search-row">
+                <input
+                  id="searchInput"
+                  type="text"
+                  placeholder="輸入牌名、關鍵字、元素..."
+                  value="${String(state.searchDraft).replace(/"/g,'&quot;')}"
+                >
+                <button class="btn primary" onclick="window.__applySearch()">搜尋</button>
+              </div>
+
+              <div style="margin-top:16px">
+                <label>分類</label>
+                <div class="category-row">
+                  ${['全部','大阿卡納','宮廷人物牌','四元素數字牌'].map(cat => `
+                    <button
+                      class="category-chip ${state.category===cat?'category-chip-active':''}"
+                      onclick="window.__setCategory('${cat}')"
+                    >${cat}</button>
+                  `).join('')}
                 </div>
               </div>
 
@@ -134,11 +161,24 @@ loadContent().then(c=>{
         </div>
       </section>
     </div>`;
+
+    const input = document.getElementById('searchInput');
+    if(input){
+      input.addEventListener('input', e => {
+        state.searchDraft = e.target.value;
+      });
+      input.addEventListener('keydown', e => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          applySearch();
+        }
+      });
+    }
   }
 
-  window.__librarySearch = function(v){ state.search = v; render(); };
-  window.__libraryCategory = function(v){ state.category = v; render(); };
-  window.__librarySelect = function(name){ state.selectedName = name; render(); };
+  window.__applySearch = applySearch;
+  window.__setCategory = setCategory;
+  window.__librarySelect = selectCard;
 
   render();
 });
