@@ -54,7 +54,7 @@ loadContent().then(c=>{
 
               <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
                 <a class="btn primary" href="order.html">立即購書</a>
-                <a class="btn" href="#flipbook">閱讀試閱</a>
+                <a href="flipbook.html" class="btn primary">開始試閱</a>
               </div>
             </div>
           </div>
@@ -62,7 +62,6 @@ loadContent().then(c=>{
           <div class="card ebook-flipbook-card" id="flipbook" style="margin-top:20px;">
             <div class="ebook-flipbook-header">
               <div>
-                <h3 style="margin-bottom:6px;">電子書翻頁試閱</h3>
                 <div class="small">點左右按鈕翻頁，也可以點下面縮圖切換頁面。</div>
               </div>
               <div class="ebook-page-counter">第 ${state.current + 1} / ${previewImages.length} 頁</div>
