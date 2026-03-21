@@ -2,85 +2,611 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>電子書試閱</title>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>線上試閱｜維納斯羅盤塔羅</title>
 <style>
-body {
-  background: #0f172a;
-  margin: 0;
-  padding: 40px 0;
-  font-family: sans-serif;
-}
+  :root{
+    --bg1:#0b0f2a;
+    --bg2:#1a1f3f;
+    --glass:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.12);
+    --text:#eef0ff;
+    --muted:#c8c9e6;
+    --accent:#f0b35d;
+    --accent2:#d47b51;
+  }
 
-/* 外框（控制大小） */
-.flipbook-wrapper {
-  width: 90%;
-  max-width: 900px;
-  margin: auto;
-}
+  *{box-sizing:border-box}
 
-/* 書本 */
-#flipbook {
-  width: 100%;
-  height: 600px;
-}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #2a2f66 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+  }
 
-/* 每頁 */
-.page {
-  background: white;
-}
+  .container{
+    max-width:1240px;
+    margin:0 auto;
+    padding:20px;
+  }
 
-/* 圖片 */
-.page img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(10,14,40,.78);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+
+  .topbar .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .brand-mark{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#f0b35d;
+    font-size:22px;
+    background:linear-gradient(135deg,#10153c,#0b0f2a);
+  }
+
+  .brand small{
+    display:block;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.14em;
+  }
+
+  .brand strong{
+    display:block;
+    font-size:18px;
+  }
+
+  nav{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  nav a{
+    padding:10px 16px;
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--text);
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+  }
+
+  nav a.active,
+  nav a:hover{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#1b1206;
+    border-color:transparent;
+  }
+
+  .section{
+    padding:26px 0;
+  }
+
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--border);
+    border-radius:26px;
+    padding:24px;
+  }
+
+  .kicker{
+    color:#ffdca0;
+    letter-spacing:.12em;
+    font-size:12px;
+    margin-bottom:10px;
+  }
+
+  .small{
+    color:var(--muted);
+    line-height:1.8;
+  }
+
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+
+  .counter{
+    padding:10px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    color:#fff4d5;
+    font-size:14px;
+  }
+
+  .actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    display:inline-block;
+    padding:12px 20px;
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--text);
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.04);
+    cursor:pointer;
+  }
+
+  .btn.primary{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#1b1206;
+    border:none;
+    font-weight:700;
+  }
+
+  /* 主翻頁區 */
+  .flip-stage{
+    position:relative;
+    min-height:720px;
+    perspective:2200px;
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:30px;
+    padding:24px 74px;
+    overflow:hidden;
+  }
+
+  .book{
+    position:relative;
+    width:min(100%,980px);
+    height:620px;
+    margin:0 auto;
+    transform-style:preserve-3d;
+  }
+
+  .book-base{
+    position:absolute;
+    inset:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-radius:18px;
+    overflow:hidden;
+    background:#e9e3d6;
+    box-shadow:0 30px 80px rgba(0,0,0,.28);
+  }
+
+  .book-base::before{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:50%;
+    width:10px;
+    transform:translateX(-50%);
+    background:linear-gradient(90deg,rgba(0,0,0,.12),rgba(255,255,255,.25),rgba(0,0,0,.12));
+    z-index:5;
+  }
+
+  .base-page{
+    overflow:hidden;
+    background:#f5f1e8;
+  }
+
+  .base-page img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#fff;
+  }
+
+  .flip-page{
+    position:absolute;
+    top:24px;
+    bottom:24px;
+    width:calc(50% - 5px);
+    right:74px;
+    transform-origin:left center;
+    transform-style:preserve-3d;
+    z-index:10;
+    pointer-events:none;
+  }
+
+  .flip-page .front,
+  .flip-page .back{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 20px 50px rgba(0,0,0,.22);
+  }
+
+  .flip-page .front{
+    border-radius:0 18px 18px 0;
+  }
+
+  .flip-page .back{
+    transform:rotateY(180deg);
+    border-radius:18px 0 0 18px;
+  }
+
+  .flip-page img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#fff;
+  }
+
+  .flip-forward{
+    animation:flipForward .8s ease-in-out forwards;
+  }
+
+  .flip-backward{
+    animation:flipBackward .8s ease-in-out forwards;
+  }
+
+  @keyframes flipForward{
+    0%{transform:rotateY(0deg)}
+    100%{transform:rotateY(-180deg)}
+  }
+
+  @keyframes flipBackward{
+    0%{transform:rotateY(-180deg)}
+    100%{transform:rotateY(0deg)}
+  }
+
+  .nav-btn{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:56px;
+    height:56px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:30px;
+    cursor:pointer;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .nav-btn:hover{
+    background:rgba(240,179,93,.2);
+  }
+
+  .nav-btn:disabled{
+    opacity:.28;
+    cursor:not-allowed;
+  }
+
+  .nav-btn.left{left:12px}
+  .nav-btn.right{right:12px}
+
+  .hint{
+    position:absolute;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    color:#ddd6fb;
+    font-size:12px;
+  }
+
+  .thumbs{
+    display:grid;
+    grid-template-columns:repeat(8,1fr);
+    gap:10px;
+    margin-top:18px;
+  }
+
+  .thumb{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    border-radius:14px;
+    padding:8px;
+    cursor:pointer;
+    color:#fff;
+  }
+
+  .thumb img{
+    width:100%;
+    display:block;
+    border-radius:10px;
+    background:#fff;
+  }
+
+  .thumb span{
+    display:block;
+    margin-top:6px;
+    font-size:11px;
+    color:#d9d3fb;
+  }
+
+  .thumb.active{
+    border-color:rgba(240,179,93,.9);
+    background:rgba(240,179,93,.14);
+  }
+
+  /* 全螢幕燈箱 */
+  .lightbox{
+    position:fixed;
+    inset:0;
+    background:rgba(5,8,24,.9);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+    padding:24px;
+  }
+
+  .lightbox.show{
+    display:flex;
+  }
+
+  .lightbox-inner{
+    position:relative;
+    width:min(1200px,96vw);
+    display:grid;
+    grid-template-columns:58px 1fr 58px;
+    gap:14px;
+    align-items:center;
+  }
+
+  .lightbox-inner img{
+    width:100%;
+    max-height:90vh;
+    object-fit:contain;
+    background:#fff;
+    border-radius:16px;
+  }
+
+  .lightbox-close{
+    position:absolute;
+    top:-18px;
+    right:-4px;
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:999px;
+    cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#1b1206;
+    font-size:20px;
+    font-weight:700;
+  }
+
+  .lightbox-nav{
+    width:56px;
+    height:56px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:30px;
+    cursor:pointer;
+  }
+
+  @media (max-width:1000px){
+    .thumbs{grid-template-columns:repeat(4,1fr)}
+    .flip-stage{padding:18px 56px;min-height:560px}
+    .book{height:460px}
+    .flip-page{top:18px;bottom:18px;right:56px}
+  }
+
+  @media (max-width:640px){
+    .thumbs{grid-template-columns:repeat(2,1fr)}
+    .flip-stage{padding:14px 44px;min-height:430px}
+    .book{height:310px}
+    .flip-page{top:14px;bottom:14px;right:44px}
+    .lightbox-inner{grid-template-columns:42px 1fr 42px}
+  }
 </style>
 </head>
-
-<body onload="checkMode()">
-
-<div class="flipbook-wrapper">
-  <div id="flipbook">
-
-    <div class="page"><img src="preview1.jpg"></div>
-    <div class="page"><img src="preview2.jpg"></div>
-    <div class="page"><img src="preview3.jpg"></div>
-    <div class="page"><img src="preview4.jpg"></div>
-    <div class="page"><img src="preview5.jpg"></div>
-    <div class="page"><img src="preview6.jpg"></div>
-    <div class="page"><img src="preview7.jpg"></div>
-    <div class="page"><img src="preview8.jpg"></div>
-
+<body>
+  <div class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="brand-mark">◔</div>
+        <div>
+          <small>GRATEFUL TAROT UNION</small>
+          <strong>古拉佛中西靈學塔羅協會</strong>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">首頁</a>
+        <a href="about.html">協會介紹</a>
+        <a href="library.html">牌義資料庫</a>
+        <a href="draw.html">抽牌占卜</a>
+        <a href="events.html">協會活動</a>
+        <a href="books.html">書籍專區</a>
+        <a href="flipbook.html" class="active">線上試閱</a>
+      </nav>
+    </div>
   </div>
-</div>
 
-<script>
-$("#flipbook").turn({
-  width: $(".flipbook-wrapper").width(),
-  height: 600,
-  autoCenter: true
-});
+  <div id="app"></div>
 
-$(window).resize(function() {
-  $("#flipbook").turn(
-    "size",
-    $(".flipbook-wrapper").width(),
-    600
-  );
-});
-  function checkMode(){
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get("mode");
-  if(mode === "fullscreen"){
-    openLightbox();
-  }
-}
-</script>
+  <script>
+    const pages = [
+      "preview1.jpg",
+      "preview2.jpg",
+      "preview3.jpg",
+      "preview4.jpg",
+      "preview5.jpg",
+      "preview6.jpg",
+      "preview7.jpg",
+      "preview8.jpg"
+    ];
 
+    let page = 0;
+    let flipClass = "";
+
+    function render(){
+      const left = Math.max(0, page - 1);
+      const right = page;
+      const nextIndex = Math.min(pages.length - 1, page + 1);
+
+      document.getElementById("app").innerHTML = `
+        <div class="container section">
+          <div class="glass">
+            <div class="kicker">FLIPBOOK PREVIEW</div>
+
+            <div class="toolbar">
+              <div>
+                <h2 style="margin:0 0 6px 0;">線上試閱｜維納斯羅盤塔羅</h2>
+                <div class="small">8 張試閱內頁，支援翻頁、縮圖切換與全螢幕閱讀。</div>
+              </div>
+              <div class="actions">
+                <a href="books.html" class="btn">返回書籍專區</a>
+                <button class="btn primary" onclick="openLightbox()">全螢幕閱讀</button>
+                <div class="counter">第 ${page + 1} / ${pages.length} 頁</div>
+              </div>
+            </div>
+
+            <div class="flip-stage">
+              <button class="nav-btn left" onclick="prevPage()" ${page===0?'disabled':''}>‹</button>
+
+              <div class="book">
+                <div class="book-base">
+                  <div class="base-page"><img src="${pages[left]}" alt="左頁"></div>
+                  <div class="base-page"><img src="${pages[right]}" alt="右頁"></div>
+                </div>
+
+                <div class="flip-page ${flipClass}">
+                  <div class="front"><img src="${pages[page]}" alt="翻頁正面"></div>
+                  <div class="back"><img src="${pages[nextIndex]}" alt="翻頁背面"></div>
+                </div>
+              </div>
+
+              <button class="nav-btn right" onclick="nextPage()" ${page===pages.length-1?'disabled':''}>›</button>
+              <div class="hint">可按左右鍵翻頁，也可點下方縮圖</div>
+            </div>
+
+            <div class="thumbs">
+              ${pages.map((src, idx) => `
+                <button class="thumb ${idx===page?'active':''}" onclick="goPage(${idx})">
+                  <img src="${src}" alt="第${idx+1}頁">
+                  <span>第${idx+1}頁</span>
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+
+        <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+          <div class="lightbox-inner" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="forceCloseLightbox()">✕</button>
+            <button class="lightbox-nav" onclick="prevPage();setTimeout(keepOpen,0)">‹</button>
+            <img src="${pages[page]}" alt="全螢幕閱讀">
+            <button class="lightbox-nav" onclick="nextPage();setTimeout(keepOpen,0)">›</button>
+          </div>
+        </div>
+      `;
+
+      if (flipClass){
+        setTimeout(() => {
+          flipClass = "";
+          render();
+          keepOpenIfFullscreen();
+        }, 820);
+      }
+    }
+
+    function prevPage(){
+      if (page > 0){
+        flipClass = "flip-backward";
+        page--;
+        render();
+        keepOpenIfFullscreen();
+      }
+    }
+
+    function nextPage(){
+      if (page < pages.length - 1){
+        flipClass = "flip-forward";
+        page++;
+        render();
+        keepOpenIfFullscreen();
+      }
+    }
+
+    function goPage(n){
+      if (n === page) return;
+      flipClass = n > page ? "flip-forward" : "flip-backward";
+      page = n;
+      render();
+      keepOpenIfFullscreen();
+    }
+
+    function openLightbox(){
+      document.getElementById("lightbox")?.classList.add("show");
+    }
+
+    function closeLightbox(e){
+      if (e.target && e.target.id === "lightbox"){
+        document.getElementById("lightbox")?.classList.remove("show");
+      }
+    }
+
+    function forceCloseLightbox(){
+      document.getElementById("lightbox")?.classList.remove("show");
+    }
+
+    function keepOpenIfFullscreen(){
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "fullscreen"){
+        setTimeout(() => {
+          document.getElementById("lightbox")?.classList.add("show");
+        }, 20);
+      }
+    }
+
+    function checkMode(){
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "fullscreen"){
+        openLightbox();
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const open = document.getElementById("lightbox")?.classList.contains("show");
+      if (e.key === "ArrowLeft") prevPage();
+      if (e.key === "ArrowRight") nextPage();
+      if (e.key === "Escape" && open) forceCloseLightbox();
+    });
+
+    render();
+    setTimeout(checkMode, 30);
+  </script>
 </body>
 </html>
