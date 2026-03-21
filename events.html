@@ -1,4 +1,12 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>events</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
-async function loadContent(){const r=await fetch('site-content.json');return await r.json();}
-function navHtml(active,c){const nav=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['報名系統','signup.html'],['協會活動','events.html'],['書籍專區','books.html'],['自動訂單','order.html'],['會員專區','members.html'],['聯絡我們','contact.html']];return `<div class="topbar"><div class="container"><div class="brand"><img src="logo-official.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div><nav>${nav.map(([n,h])=>`<a href="${h}" class="${active===n?'active':''}">${n}</a>`).join('')}</nav><a class="btn primary" href="order.html">立即下單</a></div></div>`;}
-loadContent().then(c=>{document.getElementById('app').innerHTML=navHtml('協會活動',c)+`<div class="container"><section class="section"><div class="glass"><div class="kicker">Association Events</div><h2>協會活動</h2><div class="grid two">${c.events.map(e=>`<div class="card"><h3>${e.title}</h3><div class="small">${e.text}</div></div>`).join('')}</div></div></section></div>`;});</script></body></html>
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>協會活動</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
+async function loadContent(){ return await (await fetch('site-content.json')).json(); }
+function nav(c, active){
+  const items=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['協會活動','events.html'],['書籍專區','books.html']];
+  return `<div class="topbar"><div class="container">
+    <div class="brand"><img src="logo.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
+    <nav>${items.map(([n,h])=>`<a href="${h}" class="${active===h?'active':''}">${n}</a>`).join('')}</nav>
+  </div></div>`;
+}
+
+loadContent().then(c=>{ document.getElementById('app').innerHTML=nav(c,'events.html')+`<div class="container section"><div class="glass"><h2>協會活動</h2><div class="notice">這一頁版位保留，可再補完整內容。</div></div></div>`; });
+</script></body></html>

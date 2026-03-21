@@ -1,119 +1,12 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>抽牌占卜</title><link rel="stylesheet" href="style.css"></head><body><div id="app"></div><script>
-async function loadContent(){const r=await fetch('site-content.json');return await r.json();}
-function navHtml(active,c){const nav=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['報名系統','signup.html'],['協會活動','events.html'],['書籍專區','books.html'],['自動訂單','order.html'],['會員專區','members.html'],['聯絡我們','contact.html']];return `<div class="topbar"><div class="container"><div class="brand"><img src="logo-official.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div><nav>${nav.map(([n,h])=>`<a href="${h}" class="${active===n?'active':''}">${n}</a>`).join('')}</nav><a class="btn primary" href="order.html">立即下單</a></div></div>`;}
-
-loadContent().then(c=>{
-let state={drawCount:3,drawn:[],ai:''};
-const layouts={1:['當下核心'],3:['過去','現在','未來'],5:['現況','阻礙','建議','潛意識','結果']};
-const yangElements=['火','風'];
-const yinElements=['水','土'];
-const courtNames=['侍者','騎士','皇后','國王'];
-const majorGroups={
-  '力量族群':['魔術師','力量','惡魔'],
-  '智慧族群':['女祭司','隱者','高塔'],
-  '生命族群':['皇后','命運之輪','星星'],
-  '統治族群':['皇帝','正義','月亮'],
-  '宗教族群':['教皇','吊人','太陽'],
-  '人類族群':['戀人','死神','審判'],
-  '知識族群':['戰車','節制','世界']
-};
-
-function getNumberFromCardName(name){
-  const m=name.match(/(Ace|10|[2-9])$/);
-  if(!m) return null;
-  return m[1]==='Ace' ? 1 : parseInt(m[1],10);
-}
-function detectCourt(card){ return courtNames.find(k=>card.name.includes(k)) || null; }
-function analyzeGroups(drawn){
-  const found={};
-  drawn.forEach(card=>{
-    Object.entries(majorGroups).forEach(([group,names])=>{ if(names.includes(card.name)) found[group]=(found[group]||0)+1; });
-  });
-  return found;
+async function loadContent(){ return await (await fetch('site-content.json')).json(); }
+function nav(c, active){
+  const items=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['協會活動','events.html'],['書籍專區','books.html']];
+  return `<div class="topbar"><div class="container">
+    <div class="brand"><img src="logo.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
+    <nav>${items.map(([n,h])=>`<a href="${h}" class="${active===h?'active':''}">${n}</a>`).join('')}</nav>
+  </div></div>`;
 }
 
-function drawCards(){
-  const pool=[...c.cards], picks=[];
-  for(let i=0;i<state.drawCount;i++) {
-    const idx=Math.floor(Math.random()*pool.length);
-    const card=pool.splice(idx,1)[0];
-    const rev=Math.random()<0.5;
-    picks.push({...card,position:layouts[state.drawCount][i],orientation:rev?'逆位':'正位',summary:rev?card.reversed:card.upright});
-  }
-  state.drawn=picks;
-  state.ai='';
-  render();
-}
-
-function aiRead(){
-  if(!state.drawn.length){
-    state.ai='尚未抽牌，請先選擇張數再開始。';
-    render();
-    return;
-  }
-  const counts={火:0,水:0,風:0,土:0};
-  let yang=0, yin=0, upright=0, reversed=0;
-  const numbers=[]; const courts=[]; const positionsText=[];
-  state.drawn.forEach(card=>{
-    if(counts[card.element]!==undefined) counts[card.element]++;
-    if(yangElements.includes(card.element)) yang++;
-    if(yinElements.includes(card.element)) yin++;
-    if(card.orientation==='正位') upright++; else reversed++;
-    const n=getNumberFromCardName(card.name); if(n!==null) numbers.push(n);
-    const court=detectCourt(card); if(court) courts.push({name:card.name,court,element:card.element,advice:card.advice});
-    positionsText.push(`${card.position}：${card.name}${card.orientation}｜${card.summary}`);
-  });
-
-  const dominantElement=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
-  const groupAnalysis=analyzeGroups(state.drawn);
-  const sortedGroups=Object.entries(groupAnalysis).sort((a,b)=>b[1]-a[1]);
-  let numberTrend='本次沒有明確的數字結構。';
-  if(numbers.length){
-    const sorted=[...numbers].sort((a,b)=>a-b);
-    numberTrend=`出現數字：${sorted.join('、')}。可視為從 ${sorted[0]} 階段走向 ${sorted[sorted.length-1]} 階段，呈現事件推進的節奏。`;
-  }
-  let courtText='本次未出現宮廷人物牌，重點較偏向事件與內在狀態。';
-  if(courts.length){
-    courtText=courts.map(x=>`出現 ${x.name}，代表「${x.court}」型能量正在影響局勢，與${x.element}元素有關。`).join('\n');
-  }
-  let groupText='本次未明顯形成七大族群聚焦。';
-  if(sortedGroups.length){
-    groupText=sortedGroups.map(([g,n])=>`${g}：${n} 張`).join('／');
-  }
-  const elementInterpretation={
-    '火':'行動、推進、企圖心較強',
-    '水':'情緒、關係、感受層面較強',
-    '風':'思考、溝通、判斷層面較強',
-    '土':'現實、穩定、物質課題較強'
-  };
-  const finalAdvice=state.drawn.map(card=>`- ${card.position}：${card.advice}`).join('\n');
-  const selfAwareness=state.drawn.map(card=>`- ${card.name}：${card.whoami}`).join('\n');
-
-  state.ai=`【古拉佛 AI 專業解牌】\n\n一、逐牌位解析\n${positionsText.join('\n')}\n\n二、四元素分析\n火 ${counts['火']}／水 ${counts['水']}／風 ${counts['風']}／土 ${counts['土']}\n最強元素：${dominantElement} → ${elementInterpretation[dominantElement]}\n\n三、陰陽比例\n陽（火／風）：${yang}\n陰（水／土）：${yin}\n${yang>yin ? '目前偏向外顯推進期，事情需要表達、行動與決斷。' : '目前偏向內在整理期，情緒、感受與現實調整更重要。'}\n\n四、正逆位比例\n正位：${upright} 張\n逆位：${reversed} 張\n${reversed>upright ? '逆位較多，代表阻力、延遲或內在功課較明顯。' : '正位較多，代表目前仍存在可推進的空間與支持力量。'}\n\n五、宮廷人物牌分析\n${courtText}\n\n六、數字結構分析\n${numberTrend}\n\n七、七大族群分析\n${groupText}\n\n八、AI整合結論\n本次牌陣顯示，事情正圍繞「${dominantElement}元素」的主題展開，核心在於${elementInterpretation[dominantElement]}。若先處理阻力最大的牌位，再運用支持牌位的資源，整體會更清楚。\n\n九、行動建議\n${finalAdvice}\n\n十、自我覺察\n${selfAwareness}`;
-  render();
-}
-
-function render(){
-  const options=[1,3,5].map(n=>`<button class="${state.drawCount===n?'option-active':''}" onclick="state.drawCount=${n};render()">${n} 張</button>`).join('');
-  const cardsHtml=state.drawn.length ? state.drawn.map(card=>`<div class="card"><h3>${card.position}</h3><div class="small">${card.name}・${card.orientation}</div><div class="small" style="margin-top:8px">${card.summary}</div><div class="small" style="margin-top:8px;color:#ffd37a">${card.advice}</div></div>`).join('') : `<div class="card" style="grid-column:1/-1">尚未抽牌，請先選擇張數再開始。</div>`;
-  document.getElementById('app').innerHTML = navHtml('抽牌占卜',c)+`
-  <div class="container">
-    <section class="section">
-      <div class="glass">
-        <div class="kicker">Tarot Draw + AI Pro</div>
-        <h2>專業版 AI 解牌系統</h2>
-        <div class="small">已套入：四元素分析、陰陽比例、宮廷牌人格、數字結構、七大族群，以及整體結論。</div>
-        <div class="option-row">${options}<button class="btn primary" onclick="drawCards()">立即抽牌</button><button class="btn" onclick="aiRead()">AI 解牌</button></div>
-        <div class="grid three" style="margin-top:16px">${cardsHtml}</div>
-        <div class="card" style="margin-top:16px"><h3>AI 解牌結果</h3><pre class="code">${state.ai || '抽牌後按下 AI 解牌，這裡會顯示專業版解讀。'}</pre></div>
-      </div>
-    </section>
-  </div>`;
-}
-
-window.drawCards=drawCards;
-window.aiRead=aiRead;
-window.render=render;
-render();
-});
+loadContent().then(c=>{ document.getElementById('app').innerHTML=nav(c,'draw.html')+`<div class="container section"><div class="glass"><h2>抽牌占卜</h2><div class="notice">這一頁版位保留，可再補完整內容。</div></div></div>`; });
 </script></body></html>
