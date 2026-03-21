@@ -42,7 +42,7 @@ body {
 </style>
 </head>
 
-<body>
+<body onload="checkMode()">
 
 <div class="flipbook-wrapper">
   <div id="flipbook">
@@ -73,6 +73,13 @@ $(window).resize(function() {
     600
   );
 });
+  function checkMode(){
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  if(mode === "fullscreen"){
+    openLightbox();
+  }
+}
 </script>
 
 </body>
