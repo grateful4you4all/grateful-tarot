@@ -1,0 +1,92 @@
+
+/* 牌義資料庫卡片美化版 */
+.tarot-card-list{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+.tarot-item-card{
+  width:100%;
+  text-align:left;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  color:#fff;
+  padding:16px 16px 14px;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.tarot-item-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(0,0,0,.18);
+  border-color:rgba(240,179,93,.5);
+}
+.tarot-item-card-active{
+  border-color:rgba(240,179,93,.85);
+  background:linear-gradient(180deg, rgba(240,179,93,.20), rgba(240,179,93,.08));
+  box-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+.tarot-item-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.tarot-item-title{
+  font-size:16px;
+  font-weight:700;
+  color:#fff7df;
+}
+.tarot-item-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#f0b35d,#d47b51);
+  flex:0 0 auto;
+}
+.tarot-item-meta{
+  margin-top:8px;
+  font-size:13px;
+  color:#d7d0f7;
+}
+.tarot-item-tags{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.tarot-item-tags span{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:#fff7e3;
+  font-size:12px;
+}
+.tarot-detail-card{
+  min-height:640px;
+}
+.tarot-detail-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+}
+.tarot-detail-title{
+  font-size:28px;
+  margin:0 0 6px;
+}
+.tarot-detail-badge{
+  padding:10px 14px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#f0b35d,#d47b51);
+  color:#fff;
+  font-weight:700;
+}
+.tarot-section-block{
+  margin-top:16px;
+  padding:16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}

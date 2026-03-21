@@ -19,52 +19,28 @@ function navHtml(active,c){
 loadContent().then(c=>{
   let state={ search:'', category:'全部', selectedName:(c.cards[0]&&c.cards[0].name)||'' };
 
-  function normalize(v){
-    return String(v||'').toLowerCase();
-  }
-
+  function normalize(v){ return String(v||'').toLowerCase(); }
   function cardSearchBlob(card){
     return [
-      card.name,
-      card.english,
-      card.category,
-      card.group,
-      card.element,
-      card.suit,
-      ...(card.keywords || []),
-      card.upright,
-      card.reversed,
-      card.psychology,
-      card.advice,
-      card.imagery,
-      card.whoami
+      card.name, card.english, card.category, card.group, card.element, card.suit,
+      ...(card.keywords || []), card.upright, card.reversed, card.psychology, card.advice, card.imagery, card.whoami
     ].join(' ');
   }
-
   function filtered(){
     const q = normalize(state.search).trim();
     return c.cards.filter(card => {
-      const matchCategory = state.category === '全部' || card.category === state.category;
-      const matchSearch = !q || normalize(cardSearchBlob(card)).includes(q);
-      return matchCategory && matchSearch;
+      const okCategory = state.category === '全部' || card.category === state.category;
+      const okSearch = !q || normalize(cardSearchBlob(card)).includes(q);
+      return okCategory && okSearch;
     });
   }
-
   function selected(){
     const list = filtered();
     return list.find(x => x.name === state.selectedName) || list[0] || c.cards[0];
   }
-
-  function selectCard(name){
-    state.selectedName = name;
-    render();
-  }
-
   function render(){
     const list = filtered();
-    if(list.length && !list.some(x => x.name === state.selectedName)) {
-      state.selectedName = list[0].name;
-    }
+    if(list.length && !list.some(x => x.name === state.selectedName)) state.selectedName = list[0].name;
     const s = selected();
 
     document.getElementById('app').innerHTML = navHtml('牌義資料庫', c) + `
@@ -75,79 +51,77 @@ loadContent().then(c=>{
           <h2>78 張完整牌義資料庫</h2>
           <div class="small">已分類為：大阿卡納、宮廷人物牌、四元素數字牌。</div>
 
-          <div class="library-grid" style="margin-top:16px">
+          <div class="library-grid" style="margin-top:18px">
             <div class="card">
               <div class="form-grid">
                 <div>
                   <label>關鍵字</label>
-                  <input
-                    type="text"
-                    placeholder="輸入牌名、關鍵字、元素..."
-                    value="${String(state.search).replace(/"/g,'&quot;')}"
-                    oninput="window.__librarySearch(this.value)"
-                  >
+                  <input type="text" placeholder="輸入牌名、關鍵字、元素..." value="${String(state.search).replace(/"/g,'&quot;')}" oninput="window.__librarySearch(this.value)">
                 </div>
                 <div>
                   <label>分類</label>
                   <select onchange="window.__libraryCategory(this.value)">
-                    ${['全部','大阿卡納','宮廷人物牌','四元素數字牌'].map(cat => `
-                      <option value="${cat}" ${state.category===cat?'selected':''}>${cat}</option>
-                    `).join('')}
+                    ${['全部','大阿卡納','宮廷人物牌','四元素數字牌'].map(cat => `<option value="${cat}" ${state.category===cat?'selected':''}>${cat}</option>`).join('')}
                   </select>
                 </div>
               </div>
 
               <div class="small" style="margin-top:14px">共找到 ${list.length} 張</div>
 
-              <div class="list" style="margin-top:12px">
+              <div class="list tarot-card-list" style="margin-top:14px">
                 ${list.map(card => `
-                  <button
-                    class="itembtn"
-                    onclick="window.__librarySelect('${String(card.name).replace(/'/g, "\\'")}')"
-                    style="${s && s.name===card.name ? 'outline:2px solid rgba(240,179,93,.9); background:rgba(240,179,93,.12);' : ''}"
-                  >
-                    <b>${card.name}</b>
-                    <div class="small">${card.category}｜${card.element}${card.suit ? '｜'+card.suit : ''}</div>
+                  <button class="tarot-item-card ${s && s.name===card.name ? 'tarot-item-card-active' : ''}" onclick="window.__librarySelect('${String(card.name).replace(/'/g, "\\'")}')">
+                    <div class="tarot-item-top">
+                      <div class="tarot-item-title">${card.name}</div>
+                      <div class="tarot-item-dot"></div>
+                    </div>
+                    <div class="tarot-item-meta">${card.category}｜${card.element}${card.suit ? '｜'+card.suit : ''}</div>
+                    <div class="tarot-item-tags">${(card.keywords||[]).slice(0,3).map(k=>`<span>${k}</span>`).join('')}</div>
                   </button>
                 `).join('')}
               </div>
             </div>
 
-            <div class="card">
+            <div class="card tarot-detail-card">
               ${s ? `
-                <h3>${s.name}</h3>
-                <div class="small">${s.category}｜元素：${s.element}${s.suit ? '｜花色：'+s.suit : ''}</div>
+                <div class="tarot-detail-header">
+                  <div>
+                    <h3 class="tarot-detail-title">${s.name}</h3>
+                    <div class="small">${s.category}｜元素：${s.element}${s.suit ? '｜花色：'+s.suit : ''}</div>
+                  </div>
+                  <div class="tarot-detail-badge">${s.element}</div>
+                </div>
 
-                <div class="inline-tags" style="margin-top:14px">
+                <div class="inline-tags" style="margin-top:16px">
                   ${(s.keywords || []).map(k => `<span>${k}</span>`).join('')}
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">正位</span>
                   <div class="small">${s.upright || ''}</div>
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">逆位</span>
                   <div class="small">${s.reversed || ''}</div>
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">心理分析</span>
                   <div class="small">${s.psychology || ''}</div>
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">圖像解析</span>
                   <div class="small">${s.imagery || ''}</div>
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">解讀建議</span>
                   <div class="small">${s.advice || ''}</div>
                 </div>
 
-                <div style="margin-top:12px">
+                <div class="tarot-section-block">
                   <span class="badge">Who am I</span>
                   <div class="small">${s.whoami || ''}</div>
                 </div>
@@ -162,17 +136,9 @@ loadContent().then(c=>{
     </div>`;
   }
 
-  window.__librarySearch = function(v){
-    state.search = v;
-    render();
-  };
-  window.__libraryCategory = function(v){
-    state.category = v;
-    render();
-  };
-  window.__librarySelect = function(name){
-    selectCard(name);
-  };
+  window.__librarySearch = function(v){ state.search = v; render(); };
+  window.__libraryCategory = function(v){ state.category = v; render(); };
+  window.__librarySelect = function(name){ state.selectedName = name; render(); };
 
   render();
 });
