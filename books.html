@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -9,160 +10,67 @@
 <body>
 <div id="app"></div>
 <script>
-async function loadContent(){const r=await fetch('site-content.json');return await r.json();}
-function navHtml(active,c){
-  const nav=[['首頁','index.html'],['協會介紹','about.html'],['牌義資料庫','library.html'],['抽牌占卜','draw.html'],['報名系統','signup.html'],['協會活動','events.html'],['書籍專區','books.html'],['自動訂單','order.html'],['會員專區','members.html'],['聯絡我們','contact.html']];
-  return `<div class="topbar"><div class="container"><div class="brand"><img src="logo-official.svg"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div><nav>${nav.map(([n,h])=>`<a href="${h}" class="${active===n?'active':''}">${n}</a>`).join('')}</nav><a class="btn primary" href="order.html">立即下單</a></div></div>`;
+async function loadContent(){return await (await fetch('site-content.json')).json();}
+function nav(c){
+ return `<div class="topbar"><div class="container">
+ <div class="brand"><img src="logo.png"><div><small>${c.siteEnglish}</small><strong>${c.siteName}</strong></div></div>
+ <nav>
+ <a href="index.html">首頁</a>
+ <a href="about.html">協會介紹</a>
+ <a href="library.html">牌義資料庫</a>
+ <a href="draw.html">抽牌占卜</a>
+ <a href="events.html">協會活動</a>
+ <a href="books.html" class="active">書籍專區</a>
+ </nav>
+ <a class="btn primary" href="#">立即下單</a>
+ </div></div>`;
 }
-
 loadContent().then(c=>{
-  const previewImages = ['preview4.jpg','preview5.jpg','preview6.jpg','preview7.jpg','preview8.jpg'];
-  let state = { current: 0 };
+ const imgs=["preview4.jpg","preview5.jpg","preview6.jpg","preview7.jpg","preview8.jpg"];
+ let i=0;
+ function render(){
+  document.getElementById("app").innerHTML = nav(c)+`
+  <div class="container">
+  <section class="section">
+  <div class="glass">
+  <div class="kicker">BOOKS & PREVIEW</div>
+  <h2>書籍專區｜${c.bookTitle}</h2>
 
-  function render(){
-    const img = previewImages[state.current];
-    document.getElementById('app').innerHTML = navHtml('書籍專區', c) + `
-    <div class="container">
-      <section class="section">
-        <div class="glass">
-          <div class="kicker">Books & Preview</div>
-          <h2>書籍專區｜${c.bookTitle}</h2>
-
-          <div class="grid two" style="margin-top:16px">
-            <div class="card">
-              <h3>書籍封面</h3>
-              <img src="book-cover.jpg" class="cover" alt="書籍封面">
-            </div>
-
-            <div class="card">
-              <h3>書籍資訊</h3>
-              <div class="small">書名：${c.bookTitle}</div>
-              <div class="small">作者：${c.bookAuthor}</div>
-
-              <div class="price-box">
-                <div class="price-item">
-                  <span class="label">實體書</span>
-                  <span class="price">NT$500</span>
-                </div>
-                <div class="price-item">
-                  <span class="label">電子書</span>
-                  <span class="price">NT$380</span>
-                </div>
-              </div>
-
-              <div class="small" style="margin-top:14px;">${c.bookText || '適合塔羅學習、教學與自我探索使用。'}</div>
-
-              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
-                <a class="btn primary" href="order.html">立即購書</a>
-                <a class="btn" href="#flipbook">閱讀試閱</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="card ebook-flipbook-card" id="flipbook" style="margin-top:20px;">
-            <div class="ebook-flipbook-header">
-              <div>
-                <h3 style="margin-bottom:6px;">電子書翻頁試閱</h3>
-                <div class="small">點左右按鈕翻頁，也可以點下面縮圖切換頁面。</div>
-              </div>
-              <div class="ebook-page-counter">第 ${state.current + 1} / ${previewImages.length} 頁</div>
-            </div>
-
-            <div class="ebook-stage">
-              <button class="ebook-nav-btn" onclick="window.__prevPage()" ${state.current === 0 ? 'disabled' : ''}>‹</button>
-
-              <div class="ebook-page-frame">
-                <img src="${img}" alt="試閱第 ${state.current + 1} 頁" class="ebook-page-image" onclick="window.__openLightbox(${state.current})">
-              </div>
-
-              <button class="ebook-nav-btn" onclick="window.__nextPage()" ${state.current === previewImages.length - 1 ? 'disabled' : ''}>›</button>
-            </div>
-
-            <div class="ebook-thumb-row">
-              ${previewImages.map((thumb, i) => `
-                <button class="ebook-thumb ${i === state.current ? 'ebook-thumb-active' : ''}" onclick="window.__goPage(${i})">
-                  <img src="${thumb}" alt="縮圖 ${i + 1}">
-                  <span>第${i + 1}頁</span>
-                </button>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      </section>
+  <div class="grid two">
+    <div class="card">
+      <h3>書籍封面</h3>
+      <img src="book-cover.jpg" class="cover">
     </div>
-
-    <div class="ebook-lightbox" id="ebookLightbox" onclick="window.__closeLightbox(event)">
-      <div class="ebook-lightbox-inner" onclick="event.stopPropagation()">
-        <button class="ebook-lightbox-close" onclick="window.__forceCloseLightbox()">✕</button>
-        <button class="ebook-lightbox-nav left" onclick="window.__lightboxPrev()">‹</button>
-        <img id="ebookLightboxImage" src="${img}" alt="大圖試閱">
-        <button class="ebook-lightbox-nav right" onclick="window.__lightboxNext()">›</button>
+    <div class="card">
+      <h3>書籍資訊</h3>
+      <div>作者：${c.bookAuthor}</div>
+      <div class="price-box">
+        <div class="price-item"><span class="label">實體書</span><span class="price">${c.bookPricePhysical}</span></div>
+        <div class="price-item"><span class="label">電子書</span><span class="price">${c.bookPriceEbook}</span></div>
       </div>
+      <div style="margin-top:10px">${c.bookText}</div>
     </div>
-    `;
-  }
+  </div>
 
-  function prevPage(){ if(state.current > 0){ state.current--; render(); } }
-  function nextPage(){ if(state.current < previewImages.length - 1){ state.current++; render(); } }
-  function goPage(i){ state.current = i; render(); }
+  <div class="card ebook-flipbook-card">
+    <div class="ebook-stage">
+      <button class="ebook-nav-btn" onclick="prev()">‹</button>
+      <div class="ebook-page-frame">
+        <img src="${imgs[i]}" class="ebook-page-image">
+      </div>
+      <button class="ebook-nav-btn" onclick="next()">›</button>
+    </div>
+    <div class="ebook-thumb-row">
+      ${imgs.map((x,idx)=>`<div class="ebook-thumb ${idx===i?'ebook-thumb-active':''}" onclick="go(${idx})"><img src="${x}"></div>`).join("")}
+    </div>
+  </div>
 
-  function openLightbox(i){
-    state.current = i;
-    render();
-    const box = document.getElementById('ebookLightbox');
-    if(box) box.classList.add('show');
-  }
-  function closeLightbox(e){
-    if(e.target && e.target.id === 'ebookLightbox'){
-      const box = document.getElementById('ebookLightbox');
-      if(box) box.classList.remove('show');
-    }
-  }
-  function forceCloseLightbox(){
-    const box = document.getElementById('ebookLightbox');
-    if(box) box.classList.remove('show');
-  }
-  function lightboxPrev(){
-    if(state.current > 0){
-      state.current--;
-      render();
-      const box = document.getElementById('ebookLightbox');
-      if(box) box.classList.add('show');
-    }
-  }
-  function lightboxNext(){
-    if(state.current < previewImages.length - 1){
-      state.current++;
-      render();
-      const box = document.getElementById('ebookLightbox');
-      if(box) box.classList.add('show');
-    }
-  }
-
-  window.__prevPage = prevPage;
-  window.__nextPage = nextPage;
-  window.__goPage = goPage;
-  window.__openLightbox = openLightbox;
-  window.__closeLightbox = closeLightbox;
-  window.__forceCloseLightbox = forceCloseLightbox;
-  window.__lightboxPrev = lightboxPrev;
-  window.__lightboxNext = lightboxNext;
-
-  document.addEventListener('keydown', (e)=>{
-    const box = document.getElementById('ebookLightbox');
-    const isOpen = box && box.classList.contains('show');
-    if(e.key === 'ArrowLeft'){
-      isOpen ? lightboxPrev() : prevPage();
-    }
-    if(e.key === 'ArrowRight'){
-      isOpen ? lightboxNext() : nextPage();
-    }
-    if(e.key === 'Escape' && isOpen){
-      forceCloseLightbox();
-    }
-  });
-
-  render();
+  </div></section></div>`;
+ }
+ window.prev=()=>{if(i>0){i--;render();}}
+ window.next=()=>{if(i<imgs.length-1){i++;render();}}
+ window.go=(n)=>{i=n;render();}
+ render();
 });
 </script>
 </body>
